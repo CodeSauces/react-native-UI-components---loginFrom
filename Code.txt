@@ -1,0 +1,165 @@
+import React, { Component } from "react";
+import { Col, Row, Grid } from "react-native-easy-grid";
+import { View, TextInput, Alert, StyleSheet, Image } from "react-native";
+import { Container, Header, Left, Text, Body, Right, Icon, Button, Input, Card, CardItem, Item } from 'native-base';
+import { Dialog } from 'react-native-simple-dialogs';
+import { Colors } from "react-native/Libraries/NewAppScreen";
+class LoginScreen extends React.Component {
+    static navigationOptions = {
+        //Setting the header of the screen
+        title: 'Login Screen', header: null
+    };
+    constructor(props) {
+        super(props);
+        this.state = {
+            email: undefined,
+            password: undefined,
+            dialogVisible: false
+        };
+        _onLoginPress = () => {
+
+            this.setState({ dialogVisible: true });
+            var ObjToSend = {
+                email: this.state.email,
+                password: this.state.password
+            }
+            // Creating Request Headers
+            var options = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(ObjToSend),
+            }
+
+            //Find if user Exsist in the DB
+            fetch('http://192.168.0.105:8000/login', options).then((res) => {
+
+
+                if (res.status == 200) {
+                    this.setState({ dialogVisible: false })
+                    return res.json();
+
+                }
+                else if (res.status == 404) {
+                    this.setState({ dialogVisible: false })
+                    Alert.alert("In-Correct Credentials")
+                    //incorrect details or user doesn't exisit
+
+                }
+            }).then((json) => {
+                this.setState({ dialogVisible: false })
+                this.props.navigation.navigate("Profile", json)
+
+                console.log(json); // The json object is here
+            }).catch(function (error) {
+                console.log('There has been a problem with your fetch operation: ' + error.message);
+                throw error;
+            });
+        }
+        _onRegisterPress = () => {
+            this.props.navigation.navigate("Registration")
+        }
+    }
+    render() {
+        const { navigate } = this.props.navigation;
+        return (
+            <Container>
+                <Grid>
+                    <Row size={1} >
+                        <Image
+                            style={{ flex: 1, height: undefined, width: undefined }}
+                            resizeMode="contain"
+                            source={{ uri: 'https://dwglogo.com/wp-content/uploads/2017/09/React_logo-1024x576.png' }}
+                        />
+                    </Row>
+                    <Row size={2} style={styles.loginCard}>
+                        <Card >
+                            <CardItem style={styles.loginCardHeader} bordered>
+                                <Text style={styles.loginCardHeaderTitle}>Sign in With</Text>
+
+                            </CardItem>
+                            <CardItem style={styles.loginCardBody} bordered>
+                                <Body>
+                                    <Text style={styles.loginCardHeaderTitle}>Or sign in with credentials</Text>
+                                    <Item style={styles.loginCardInputs}>
+                                        <Icon active name='mail' />
+                                        <Input placeholder='Enter Your Email...' />
+                                    </Item>
+                                    <Item style={styles.loginCardInputs}>
+                                        <Icon active name='key' />
+                                        <Input secureTextEntry={true} placeholder='Enter Your Password...' />
+                                    </Item>
+                                    {/* <TextInput
+placeholder="Enter Your Mail.."
+style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
+onChangeText={(email) => this.setState({ email })}
+value={this.state.email}
+/>
+<TextInput
+placeholder="Password"
+style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
+onChangeText={(password) => this.setState({ password })}
+value={this.state.password}
+/> */}
+                                    <Button style={styles.loginbtn} iconLeft
+                                        onPress={_onLoginPress}>
+                                        <Text>Sign In</Text>
+                                    </Button>
+                                    <Dialog
+                                        visible={this.state.dialogVisible}
+                                        title="Logging You in..."
+                                        onTouchOutside={() => this.setState({ dialogVisible: false })} >
+
+                                    </Dialog>
+                                </Body>
+                            </CardItem>
+
+                        </Card>
+                    </Row>
+                </Grid>
+            </Container>
+        );
+    }
+
+}
+const styles = StyleSheet.create({
+    bgred: { backgroundColor: 'red' }, bggreen: { backgroundColor: 'green' },
+    loginCard: {
+        justifyContent: "center",
+        alignSelf: "center",
+        width: '90%',
+        alignContent: "center",
+        marginBottom: 230
+
+    },
+
+    loginCardHeader: {
+
+    },
+    loginCardHeaderTitle: {
+        width: "100%",
+        textAlign: "center"
+
+    },
+    loginCardHeaderButtonContainer: {
+    },
+    loginCardBody: {
+        width: "100%",
+        textAlign: "center",
+        backgroundColor: "#f4f5f7",
+        color: '#8898aa'
+    },
+    loginCardInputs: {
+        backgroundColor: "white",
+        width: "100%",
+        paddingHorizontal: 20,
+        marginVertical: 5
+    },
+    loginbtn: {
+        alignSelf: "center",
+        marginTop: 5
+    }
+});
+
+export default LoginScreen;
